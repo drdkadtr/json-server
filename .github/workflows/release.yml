@@ -1,0 +1,55 @@
+name: Release
+on:
+  push:
+    tags:
+      - v*
+env:
+  IMAGE_NAME: adtrdr/json-server-app
+  ARGOCD_ENV: gh-action-argocd-app-env
+  WORKFLOW: json-server-app-newversion
+  BRANCH: main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add TAG_NAME env property
+        run: echo "TAG_NAME=`echo ${GITHUB_REF#refs/tags/}`" >> $GITHUB_ENV
+
+     - name: Open PR for new App Version
+       uses: benc-uk/workflow-dispatch@v1.1
+       env:
+         ENV_REPO: ${{ github.event.repository.owner.name }}/${{ env.ARGOCD_ENV }}
+       with:
+         workflow: ${{ env.WORKFLOW }}
+         token: ${{ secrets.TOKEN }}
+         inputs: '{"tag_name": "${{ env.TAG_NAME }}", "app_repo": "${{ github.event.repository.name }}", "image": "${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}"}'
+         ref: refs/heads/${{ env.BRANCH }}
+         repo: ${{ env.ENV_REPO }}
