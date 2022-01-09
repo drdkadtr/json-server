@@ -15,9 +15,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ env.TAG }}
-      - name: Run Docker image
-        run: docker run -d -p 8000:8000 --name "$GITHUB_WORKFLOW" ${{ env.IMAGE_NAME }}:${{ env.TAG }}
+      - name: Build and run the Docker image
+        run: |
+          docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ env.TAG }}
+          docker run -d -p 8000:8000 --name "$GITHUB_WORKFLOW" ${{ env.IMAGE_NAME }}:${{ env.TAG }}
       - name: cURL image
         run:  docker run -it --rm --name "$GITHUB_RUN_ID-curl" curlimages/curl 0.0.0.0:8000
