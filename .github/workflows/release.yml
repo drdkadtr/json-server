@@ -1,8 +1,10 @@
 name: Release
 on:
   push:
+    branches:
+      - 'main'
     tags:
-      - v*
+      - 'v*'
 env:
   IMAGE_NAME: adtrdr/json-server-app
   ARGOCD_ENV: gh-action-argocd-app-env
