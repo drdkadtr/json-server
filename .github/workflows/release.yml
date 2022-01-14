@@ -1,15 +1,10 @@
 name: Release
 on:
   push:
-    branches:
-      - 'main'
     tags:
       - 'v*'
 env:
   IMAGE_NAME: adtrdr/json-server-app
-  ARGOCD_ENV: gh-action-argocd-app-env
-  WORKFLOW: json-server-app-newversion
-  BRANCH: main
 
 jobs:
   build:
@@ -37,7 +32,35 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          tag_with_ref: true
+          tag_with_sha: true
 
       - name: Verify image
         run: |
           docker image ls ${{ env.IMAGE_NAME }} --no-trunc
+
+  release:
+    name: Run argo deployment
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || github.event_name != 'pull_request' }}
+    env:
+      ARGOCD_ENV: gh-action-argocd-app-env
+      WORKFLOW: deploy
+      BRANCH: main
+    steps:
+
+      - name: Add TAG_NAME env property
+        run: |
+          echo "TAG_NAME=`echo ${GITHUB_REF#refs/tags/}`" >> $GITHUB_ENV
+
+      - name: Open PR in Environment Repository for new App Version
+        uses: benc-uk/workflow-dispatch@v1.1
+        env:
+          ENV_REPO: ${{ github.event.repository.owner.name }}/${{ env.ARGOCD_ENV }}
+        with:
+          workflow: ${{ env.WORKFLOW }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          inputs: '{"tag_name":"${{ env.TAG_NAME }}", "app_repo":"${{ github.event.repository.name }}", "image":"${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}"}'
+          ref: refs/heads/${{ env.BRANCH }}
+          repo: ${{ env.ENV_REPO }}
