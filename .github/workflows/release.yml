@@ -32,15 +32,13 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          tag_with_ref: true
-          tag_with_sha: true
 
       - name: Verify image
         run: |
           docker image ls ${{ env.IMAGE_NAME }} --no-trunc
 
   release:
-    name: Run argo deployment
+    name: Trigger argo deployment
     needs: build
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' || github.event_name != 'pull_request' }}
@@ -60,7 +58,8 @@ jobs:
           ENV_REPO: ${{ github.event.repository.owner.name }}/${{ env.ARGOCD_ENV }}
         with:
           workflow: ${{ env.WORKFLOW }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token   
+          token: ${{ secrets.PERSONAL_TOKEN }}
           inputs: '{"tag_name":"${{ env.TAG_NAME }}", "app_repo":"${{ github.event.repository.name }}", "image":"${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}"}'
           ref: refs/heads/${{ env.BRANCH }}
           repo: ${{ env.ENV_REPO }}
