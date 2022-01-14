@@ -1,7 +1,8 @@
 name: Release
 on:
-  tags:
-    - 'v*'
+  push:
+    tags:
+      - 'v*'
 env:
   IMAGE_NAME: adtrdr/json-server-app
 
