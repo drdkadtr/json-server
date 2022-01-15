@@ -43,7 +43,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' || github.event_name != 'pull_request' }}
     env:
       ARGOCD_ENV: gh-action-argocd-app-env
-      WORKFLOW: deploy
+      WORKFLOW: gitops
       BRANCH: main
       PORT: 8000
 
@@ -60,11 +60,11 @@ jobs:
           workflow: ${{ env.WORKFLOW }}
           # https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token
           token: ${{ secrets.PERSONAL_TOKEN }}
+          ref: refs/heads/${{ env.BRANCH }}
+          repo: ${{ env.ENV_REPO }}
           inputs: '{
             "tag_name":"${{ env.TAG_NAME }}",
             "app_repo":"${{ github.event.repository.name }}",
             "image":"${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}",
             "port":"${{ env.PORT }}"
           }'
-          ref: refs/heads/${{ env.BRANCH }}
-          repo: ${{ env.ENV_REPO }}
