@@ -1,0 +1,19 @@
+{
+  "name": "demo-json-server",
+  "version": "1.0.0",
+  "description": "demo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drdkadtr/json-server.git"
+  },
+  "author": "Admir Trakic",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/drdkadtr/json-server/issues"
+  },
+  "homepage": "https://github.com/drdkadtr/json-server#readme"
+}
