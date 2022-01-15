@@ -64,7 +64,7 @@ jobs:
             "tag_name":"${{ env.TAG_NAME }}",
             "app_repo":"${{ github.event.repository.name }}",
             "image":"${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}",
-            "port":"${{ env.PORT }}
+            "port":"${{ env.PORT }}"
           }'
           ref: refs/heads/${{ env.BRANCH }}
           repo: ${{ env.ENV_REPO }}
